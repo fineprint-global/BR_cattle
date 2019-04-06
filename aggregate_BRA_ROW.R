@@ -1,6 +1,7 @@
-################
-# aggregate
-################
+################################
+# aggregate to 2 regions
+# BRA & ROW
+################################
 agg <- function(x)
 {
   x <- as.matrix(x) %*% sapply(unique(colnames(x)),"==",colnames(x))
