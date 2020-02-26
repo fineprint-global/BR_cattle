@@ -8,57 +8,30 @@ agg <- function(x){
 
 # footprint function
 product_flows <- function(country, commodity, allocation, precision = 1e-4){
-  commodity = paste0(which(regions$ISO==country),"_",commodity)
+  # commodity = paste0(which(regions$ISO==country),"_",commodity)
+  com_id <- index$ISO==country & index$item==commodity
   if(allocation=="price"){
     # FOOD - products consumed by country
-    data <- data.frame(region = rep(regions$Country, each = 120),
-                       item = rep(items$Item, 192),
-                       type = "food",
-                       commodity = L_price[commodity,],
-                       Y = rowSums(Y_fabio))
-    data$comFP <- data$commodity * data$Y
-    data$landFP <- data$comFP * sum(MP_price[,commodity])
-    data <- cbind(data,Y_fabio/rowSums(Y_fabio))
-    data <- data[data$landFP>precision,] # delete rows with values < 1 m² (1e-4 ha)
-    data_price <- data
+    FP <- L_price[com_id,] * Y_fabio * sum(MP_price[,com_id])
+    FP <- cbind(index_fabio[rowSums(FP)>precision,],FP[rowSums(FP)>precision,])
+    FP_price <- FP
     
     # NONFOOD - products consumed by country
-    data <- data.frame(region = rep(regions_exio$EXIOregion, each = 200),
-                       item = rep(items_exio$Item, 49),
-                       type = "nonfood",
-                       commodity = B_inv_price[commodity,],
-                       Y = rowSums(Y_exio))
-    data$comFP <- data$commodity * data$Y
-    data$landFP <- data$comFP * sum(MP_price[,commodity])
-    data <- cbind(data,Y_exio/rowSums(Y_exio))
-    data <- data[data$landFP>precision,] # delete rows with values < 1 m² (1e-4 ha)
-    data_price <- rbind(data_price,data)
-    return(data_price)
+    FP <- B_inv_price[com_id,] * Y_exio * sum(MP_price[,com_id])
+    FP <- cbind(index_exio[rowSums(FP)>precision,],FP[rowSums(FP)>precision,])
+    FP_price <- rbind(FP_price,FP)
+    return(FP_price)
   } else if(allocation=="mass"){
     # FOOD - products consumed by country
-    data <- data.frame(region = rep(regions$Country, each = 120),
-                       item = rep(items$Item, 192),
-                       type = "food",
-                       commodity = L_mass[commodity,],
-                       Y = rowSums(Y_fabio))
-    data$comFP <- data$commodity * data$Y
-    data$landFP <- data$comFP * sum(MP_mass[,commodity])
-    data <- cbind(data,Y_fabio/rowSums(Y_fabio))
-    data <- data[data$landFP>precision,] # delete rows with values < 1 m² (1e-4 ha)
-    data_mass <- data
+    FP <- L_mass[com_id,] * Y_fabio * sum(MP_mass[,com_id])
+    FP <- cbind(index_fabio[rowSums(FP)>precision,],FP[rowSums(FP)>precision,])
+    FP_mass <- FP
     
     # NONFOOD - products consumed by country
-    data <- data.frame(region = rep(regions_exio$EXIOregion, each = 200),
-                       item = rep(items_exio$Item, 49),
-                       type = "nonfood",
-                       commodity = B_inv_mass[commodity,],
-                       Y = rowSums(Y_exio))
-    data$comFP <- data$commodity * data$Y
-    data$landFP <- data$comFP * sum(MP_mass[,commodity])
-    data <- cbind(data,Y_exio/rowSums(Y_exio))
-    data <- data[data$landFP>precision,] # delete rows with values < 1 m² (1e-4 ha)
-    data_mass <- rbind(data_mass,data)
-    return(data_mass)
+    FP <- B_inv_mass[com_id,] * Y_exio * sum(MP_mass[,com_id])
+    FP <- cbind(index_exio[rowSums(FP)>precision,],FP[rowSums(FP)>precision,])
+    FP_mass <- rbind(FP_mass,FP)
+    return(FP_mass)
   }
 }
 
